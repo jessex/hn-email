@@ -68,7 +68,7 @@ end
 
 email = ''
 password = ''
-File.open('credentials.txt', 'r') do |f|  
+File.open(File.join(File.dirname(__FILE__), 'credentials.txt'), 'r') do |f|  
   while line = f.gets  
     if !/^email/.match(line).nil?
       email = line.split(':')[1].strip 
