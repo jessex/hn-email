@@ -71,14 +71,14 @@ password = ''
 File.open('credentials.txt', 'r') do |f|  
   while line = f.gets  
     if !/^email/.match(line).nil?
-      email = line.split(':')[1] 
+      email = line.split(':')[1].strip 
     elsif !/^password/.match(line).nil?
-      password = line.split(':')[1]
+      password = line.split(':')[1].strip
     end 
   end  
 end
 
-Pony.mail(:to => 'essexjosh@gmail.com', :via => :smtp, :via_options => {
+Pony.mail(:to => email, :via => :smtp, :via_options => {
     :address => 'smtp.gmail.com',
     :port => '587',
     :enable_starttls_auto => true,
