@@ -1,16 +1,14 @@
 #!/usr/local/bin/ruby -rubygems
 
-require 'hpricot'
 require 'open-uri'
+require 'json'
 require 'pony'
 
-BASE_URL = 'http://news.ycombinator.com/'
-
 class Headline
-  def initialize(headline, headline_url, points, 
+  def initialize(title, title_url, points, 
                  comments, comments_url, time, time_units)
-    @headline = headline
-    @headline_url = headline_url
+    @title = title
+    @title_url = title_url
     @points = points
     @comments = comments
     @comments_url = comments_url
@@ -19,18 +17,9 @@ class Headline
   end
   
   def to_s
-    "\"#{@headline}\" [#{@headline_url}] - #{@time} #{@time_units} ago | " <<
-      "#{@points} points\n#{@comments} comments " << 
-      "[#{BASE_URL + @comments_url}]\n\n" 
+    "#{@title} [#{@title_url}] - #{@time} #{@time_units} ago | " <<
+      "#{@points} points\n#{@comments} comments [#{@comments_url}]\n\n" 
   end
-    
-  attr_reader :headline
-  attr_reader :headline_url
-  attr_reader :points
-  attr_reader :comments
-  attr_reader :comments_url
-  attr_reader :time
-  attr_reader :time_units
 end
 
 begin
@@ -41,28 +30,22 @@ rescue ArgumentError
   exit
 end
 
-html = ''
-open(BASE_URL).each { |f| html << f }
-doc = Hpricot(html)
-
-articles = doc/'td.title'/'a'
-articles.slice! articles.length - 1
-
-meta = doc/'td.subtext'
+json = ''
+open("http://api.ihackernews.com/page").each { |f| json << f }
+articles = JSON.parse(json)['items']
 
 headlines = []
-(articles.zip meta).each do |k, v|
-  points = Integer v.at('span').to_plain_text.match(/\d+/).to_s
+articles.each do |a|
+  points = a['points']
   if points > THRESHOLD
-      headline = k.html
-      headline_url = k.get_attribute 'href'
-      data = v.at('a').following
-      comments = Integer data[1].to_plain_text.match(/\d+/).to_s
-      comments_url = data[1].get_attribute 'href'
-      time_ago = data[0].to_plain_text.match(/ (.+) ago/).captures[0].split ' '
-
-      headlines << Headline.new(headline, headline_url, points, comments,
-                                comments_url, time_ago[0], time_ago[1])
+    title = a['title']
+    title_url = a['url']
+    comments = a['commentCount']
+    comments_url = 'http://news.ycombinator.com/item?id=%d' % a['id']
+    time_ago = a['postedAgo'].match(/ (.+) ago/).captures[0].split ' '
+    
+    headlines << Headline.new(title, title_url, points, comments,
+                              comments_url, time_ago[0], time_ago[1])
   end
 end
 
