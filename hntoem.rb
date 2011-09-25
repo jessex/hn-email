@@ -42,10 +42,10 @@ articles.each do |a|
     title_url = a['url']
     comments = a['commentCount']
     comments_url = 'http://news.ycombinator.com/item?id=%d' % a['id']
-    time_ago = a['postedAgo'].match(/ (.+) ago/).captures[0].split ' '
+    time_ago = a['postedAgo'].match(/(.+) ago/).captures[0].split ' '
     
     headlines << Headline.new(title, title_url, points, comments,
-                              comments_url, time_ago[0], time_ago[1])
+                              comments_url, Integer(time_ago[0]), time_ago[1])
   end
 end
 
