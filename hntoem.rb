@@ -68,7 +68,7 @@ end
 
 email = ''
 password = ''
-File.open('credentials.txt', 'r') { |f|  
+File.open('credentials.txt', 'r') do |f|  
   while line = f.gets  
     if !/^email/.match(line).nil?
       email = line.split(':')[1] 
@@ -76,7 +76,7 @@ File.open('credentials.txt', 'r') { |f|
       password = line.split(':')[1]
     end 
   end  
-}
+end
 
 Pony.mail(:to => 'essexjosh@gmail.com', :via => :smtp, :via_options => {
     :address => 'smtp.gmail.com',
