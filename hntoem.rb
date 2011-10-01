@@ -22,11 +22,45 @@ class Headline
   end
 end
 
+def to_minutes(time, time_units)
+  if !/day.?/.match(time_units).nil?
+    return time * 1440
+  elsif !/hour.?/.match(time_units).nil?
+    return time * 60
+  elsif !/minute.?/.match(time_units).nil?
+    return time
+  else
+    raise ArgumentError
+  end
+end
+
+checkers = { 'points' => "%d >= %d", 'comments' => "%d >= %d", 
+             'time' => "%d <= %d" }
+filters = {}
+
 begin
-  THRESHOLD = Integer ARGV[0]
+  ARGV.each_with_index do |arg, i|
+    if arg == '-p'
+      filters["points"] = ["%d", Integer(ARGV[i+1])]
+    elsif arg == '-c'
+      filters["comments"] = ["%d", Integer(ARGV[i+1])]
+    elsif arg == '-t'
+      time, unit = ARGV[i+1].split ','
+      filters["time"] = ["%d", to_minutes(Integer(time), unit)]
+    end
+  end
 rescue ArgumentError
-  puts "Proper usage: $ ./hntoem.rb [points threshold]"
-  puts "Points threshold value must be an integer"
+  puts "Proper usage: $ ./hntoem.rb [filter options]\n" +
+       "Filter options include a flag followed by a value, where the flag \n" +
+       "identifies which field to filter on. Options include:\n" +
+       "\t-p POINTS     -->  Article must have at least POINTS points\n" +
+       "\t-c COMMENTS   -->  Article must have at least COMMENTS comments\n" +
+       "\t-t TIME,UNIT  -->  Article must have been posted no more than TIME " +
+       "UNITs ago\n" +
+       "\t                   Examples: '-t 5,hour' or '-t 15,minute' or " +
+       "'-t 2,day'\n" +
+       "You can select any of these options for filtering. Using no options\n" +
+       "simply returns the front page of articles.\n"
   exit
 end
 
@@ -37,12 +71,23 @@ articles = JSON.parse(json)['items']
 headlines = []
 articles.each do |a|
   points = a['points']
-  if points > THRESHOLD
+  comments = a['commentCount']
+  begin
+    time_ago = a['postedAgo'].match(/(.+) ago/).captures[0].split ' '
+    time = to_minutes(Integer(time_ago[0]), time_ago[1])
+  rescue NoMethodError
+    next
+  end
+  
+  valid = true
+  filters.each do |k, v|
+    valid &&= eval(checkers[k] % [v[0] % eval(k), v[1]])
+  end
+  
+  if valid
     title = a['title']
     title_url = a['url']
-    comments = a['commentCount']
     comments_url = 'http://news.ycombinator.com/item?id=%d' % a['id']
-    time_ago = a['postedAgo'].match(/(.+) ago/).captures[0].split ' '
     
     headlines << Headline.new(title, title_url, points, comments,
                               comments_url, Integer(time_ago[0]), time_ago[1])
@@ -70,5 +115,4 @@ Pony.mail(:to => email, :via => :smtp, :via_options => {
     :authentication => :plain,
 },
 :subject => 'HN to EM', :body => headlines) 
-  
 
