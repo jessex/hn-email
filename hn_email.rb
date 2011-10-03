@@ -54,17 +54,21 @@ begin
     end
   end
 rescue ArgumentError
-  puts "Proper usage: $ ./hntoem.rb [filter options]\n" +
+  puts "Proper usage: $ ./hn_email.rb [filter options]\n" +
        "Filter options include a flag followed by a value, where the flag \n" +
        "identifies which field to filter on. Options include:\n" +
        "\t-p POINTS,[<[=] or >[=] or ==]      -->  Article must have [<[=] or" +
        " >[=] or ==] POINTS points\n" +
+       "\t                                         Examples: '-p 250,>=' or" +
+       " '-p 75,<='\n" +
        "\t-c COMMENTS,[<[=] or >[=] or ==]    -->  Article must have [<[=] or" + 
        " >[=] or ==] COMMENTS comments\n" +
+       "\t                                         Examples: '-c 15,>=' or" +
+       " '-c 0,=='\n" +
        "\t-t TIME,UNIT,[<[=] or >[=] or ==]   -->  Article must have been " +
        " posted [<[=] or >[=] or ==] TIME UNITs ago\n" +
-       "\t                                         Examples: '-t 5,hour' or " +
-       "'-t 15,minute' or '-t 2,day'\n" +
+       "\t                                         Examples: '-t 5,hour,>' or" +
+       " '-t 15,minute,<=' or '-t 2,day,=='\n" +
        "You can select any of these options for filtering.\nUsing no options " +
        "simply returns the front page of articles.\n"
   exit
