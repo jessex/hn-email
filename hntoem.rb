@@ -34,10 +34,11 @@ def to_minutes(time, time_units)
   end
 end
 
-checkers = { 'points' => "%d >= %d", 'comments' => "%d >= %d", 
+CHECKERS = { 'points' => "%d >= %d", 'comments' => "%d >= %d", 
              'time' => "%d <= %d" }
 filters = {}
 
+#get filters from command line arguments
 begin
   ARGV.each_with_index do |arg, i|
     if arg == '-p'
@@ -64,10 +65,12 @@ rescue ArgumentError
   exit
 end
 
+#get front page HN article information as JSON
 json = ''
 open("http://api.ihackernews.com/page").each { |f| json << f }
 articles = JSON.parse(json)['items']
 
+#gather all headlines which meet filter requirements
 headlines = []
 articles.each do |a|
   points = a['points']
@@ -81,7 +84,7 @@ articles.each do |a|
   
   valid = true
   filters.each do |k, v|
-    valid &&= eval(checkers[k] % [v[0] % eval(k), v[1]])
+    valid &&= eval(CHECKERS[k] % [v[0] % eval(k), v[1]])
   end
   
   if valid
@@ -94,21 +97,29 @@ articles.each do |a|
   end
 end
 
+#get email credentials from external file
 email = ''
 password = ''
+address = ''
+port = ''
 File.open(File.join(File.dirname(__FILE__), 'credentials.txt'), 'r') do |f|  
   while line = f.gets  
     if !/^email/.match(line).nil?
       email = line.split(':')[1].strip 
     elsif !/^password/.match(line).nil?
       password = line.split(':')[1].strip
-    end 
+    elsif !/^address/.match(line).nil?
+      address = line.split(':')[1].strip
+    elsif !/^port/.match(line).nil?
+      port = line.split(':')[1].strip
+    end
   end  
 end
 
+#email filtered HN headlines to self
 Pony.mail(:to => email, :via => :smtp, :via_options => {
-    :address => 'smtp.gmail.com',
-    :port => '587',
+    :address => address,
+    :port => port,
     :enable_starttls_auto => true,
     :user_name => email,
     :password => password,
