@@ -107,12 +107,12 @@ articles.each do |a|
 end
 
 #get email credentials from external file
-fields = {'email' => '', 'password' => '', 'address' => '', 'port' => ''}
+credentials = {'email' => '', 'password' => '', 'address' => '', 'port' => ''}
 File.open(File.join(File.dirname(__FILE__), 'credentials.txt'), 'r') do |f|  
   while line = f.gets
-    fields.each do |k, v|
+    credentials.each do |k, v|
       if !/^#{k}/.match(line).nil?
-        fields[k] = line.split(':')[1].strip
+        credentials[k] = line.split(':')[1].strip
         next
       end
     end  
@@ -120,12 +120,12 @@ File.open(File.join(File.dirname(__FILE__), 'credentials.txt'), 'r') do |f|
 end
 
 #email filtered HN headlines to self
-Pony.mail(:to => fields['email'], :via => :smtp, :via_options => {
-    :address => fields['address'],
-    :port => fields['port'],
+Pony.mail(:to => credentials['email'], :via => :smtp, :via_options => {
+    :address => credentials['address'],
+    :port => credentials['port'],
     :enable_starttls_auto => true,
-    :user_name => fields['email'],
-    :password => fields['password'],
+    :user_name => credentials['email'],
+    :password => credentials['password'],
     :authentication => :plain,
 },
 :subject => 'HN to EM', :body => headlines) 
