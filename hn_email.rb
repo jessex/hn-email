@@ -78,7 +78,7 @@ articles.each do |a|
   begin
     time_ago = a['postedAgo'].match(/(.+) ago/).captures[0].split ' '
     time = to_minutes(Integer(time_ago[0]), time_ago[1])
-  rescue NoMethodError
+  rescue NoMethodError, ArgumentError
     next
   end
   
