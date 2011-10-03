@@ -38,18 +38,13 @@ end
 filters = {}
 begin
   ARGV.each_with_index do |arg, i|
-    if arg == '-p'
+    if arg == '-p' or arg == '-c'
       if ARGV[1].nil? or ARGV[i+1].match(/\d+,==|>=|<=|>|<$/).nil?
         raise ArgumentError
       end
-      points, comparator = ARGV[i+1].split ','
-      filters["points"] = ["%d", comparator, Integer(points)]
-    elsif arg == '-c'
-      if ARGV[1].nil? or ARGV[i+1].match(/\d+,==|>=|<=|>|<$/).nil?
-        raise ArgumentError
-      end
-      comments, comparator = ARGV[i+1].split ','
-      filters["comments"] = ["%d", comparator, Integer(comments)]
+      value, comparator = ARGV[i+1].split ','
+      filters[arg == '-p' ? "points" : "comments"] = 
+        ["%d", comparator, Integer(value)]
     elsif arg == '-t'
       if ARGV[1].nil? or ARGV[i+1].match(/\d+,==|>=|<=|>|<$/).nil?
         raise ArgumentError
