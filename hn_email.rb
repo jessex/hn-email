@@ -132,4 +132,3 @@ Pony.mail(:to => credentials['email'], :via => :smtp, :via_options => {
 },
 :subject => 'HN to EM', :body => headlines) 
 
-
